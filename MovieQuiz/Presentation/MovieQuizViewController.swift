@@ -153,12 +153,11 @@ final class MovieQuizViewController: UIViewController {
         yesButtonClicked.isEnabled = false //отключаем обе кнопки чтобы не засчитывалось несколько ответов за раз
         noButtonClicked.isEnabled = false
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            self.yesButtonClicked.isEnabled = true
-            self.noButtonClicked.isEnabled = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in //через слабую ссылку избавляемся от ретейн цикла
+            guard let self = self else { return } // анврапим слабую ссылку
             self.showNextQuestionOrResults()
-           
-
+            self.yesButtonClicked.isEnabled = true // включаем кнопки
+            self.noButtonClicked.isEnabled = true
         }
     }
     
@@ -207,14 +206,16 @@ final class MovieQuizViewController: UIViewController {
                     message: result.text,
                     preferredStyle: .alert)
 
-                let action = UIAlertAction(title: result.buttonText, style: .default) { _ in
-                    self.currentQuestionIndex = 0
-                    self.correctAnswers = 0
-
-                    let firstQuestion = self.questions[self.currentQuestionIndex]
-                    let viewModel = self.convert(model: firstQuestion)
-                    self.show(quiz: viewModel)
-                }
+        let action = UIAlertAction(title: result.buttonText, style: .default) { [weak self] _ in //через слабую ссылку избавляемся от ретейн цикла
+            guard let self = self else { return } // анврапим слабую ссылку
+            
+            self.currentQuestionIndex = 0
+            self.correctAnswers = 0
+            
+            let firstQuestion = self.questions[self.currentQuestionIndex]
+            let viewModel = self.convert(model: firstQuestion)
+            self.show(quiz: viewModel)
+        }
 
                 alert.addAction(action)
                 self.present(alert, animated: true, completion: nil)
