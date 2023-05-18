@@ -7,7 +7,7 @@
 
 import Foundation
 
-class QuestionFactory {
+class QuestionFactory: QuestionFactoryProtocol {
     
     // массив вопросов
     private let questions: [QuizQuestion] = [
@@ -53,16 +53,25 @@ class QuestionFactory {
                 correctAnswer: false)
         ]
    
+    
+    weak var delegate: QuestionFactoryDelegate?
+    
+    
     //объявляем функцию requestNextQuestion, которая ничего не принимает и возвращает опциональную модель QuizQuestion
-    func requestNextQuestion() -> QuizQuestion? {
-        guard let index = (0..<questions.count).randomElement() else {  //выбираем случайный индекс вопроса от 0 до общего кол-ва вопросов
-                                                                        // функция randomElement() возвращает опционал поэтопу анврапим результат
-            return nil
+    func requestNextQuestion() {
+        guard let index = (0..<questions.count).randomElement() else {
+            delegate?.didReceiveNextQuestion(question: nil)
+            return
         }
-        return questions[safe: index]   //safe — это функция, которую мы добавили в расширении массива. эта функция позволяет безопасно достать элемент из массива. «Безопасно» — то есть если индекс выйдет за пределы размера массива, вместо крэша нам вернётся просто nil.
+        
+        let question = questions[safe: index]
+        delegate?.didReceiveNextQuestion(question: question)
+        //safe — это функция, которую мы добавили в расширении массива. эта функция позволяет безопасно достать элемент из массива. «Безопасно» — то есть если индекс выйдет за пределы размера массива, вместо крэша нам вернётся просто nil
     }
     
-
-    
-    
+    init(delegate: QuestionFactoryDelegate) {
+        self.delegate = delegate
+    }
 }
+
+

@@ -1,6 +1,6 @@
 import UIKit
 
-final class MovieQuizViewController: UIViewController {
+final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     // MARK: - Lifecycle
     
     /*
@@ -53,12 +53,25 @@ final class MovieQuizViewController: UIViewController {
     private let questionsAmount: Int = 10
     
     //фабрика вопросов к которой обращается контроллер
-    private var questionFactory: QuestionFactory = QuestionFactory()
+    private var questionFactory: QuestionFactoryProtocol?
     
     //текущий вопрос, который видит пользователь
     private var currentQuestion: QuizQuestion?
     
     
+    func didReceiveNextQuestion(question: QuizQuestion?) {
+        guard let question = question else {
+            return
+        }
+        
+        currentQuestion = question
+        let viewModel = convert(model: question)
+        DispatchQueue.main.async { [weak self] in
+            self?.show(quiz: viewModel)
+        }
+    }
+    
+    // MARK: - Actions
     
     //no button private func
     @IBAction private func noButtonClicked(_ sender: Any) {
@@ -82,6 +95,7 @@ final class MovieQuizViewController: UIViewController {
             showAnswerResult(isCorrect: answer == currentQuestion.correctAnswer)
     }
     
+    // MARK: - Private functions
     
     // приватный метод, который и меняет цвет рамки, и вызывает метод перехода
     // принимает на вход булевое значение и ничего не возвращает
@@ -125,9 +139,11 @@ final class MovieQuizViewController: UIViewController {
     
     // приватный метод, который содержит логику перехода в один из сценариев
     private func showNextQuestionOrResults() {
-        imageView.layer.borderColor = UIColor.clear.cgColor // setting imageView's border to clear
+        // устанавливаем цвет рамки на clear
+        imageView.layer.borderColor = UIColor.clear.cgColor
         
-        if currentQuestionIndex == questionsAmount - 1 { // идём в состояние "Результат квиза"
+        // идём в состояние "Результат квиза"
+        if currentQuestionIndex == questionsAmount - 1 {
             let text = correctAnswers == questionsAmount ?
                     "Поздравляем, Вы ответили на 10 из 10!" :
                     "Вы ответили на \(correctAnswers) из 10, попробуйте ещё раз!"
@@ -138,12 +154,7 @@ final class MovieQuizViewController: UIViewController {
                     showResults(quiz: viewModel)
         } else {
             currentQuestionIndex += 1
-            if let nextQuestion = questionFactory.requestNextQuestion() {
-                currentQuestion = nextQuestion
-                let viewModel = convert(model: nextQuestion)
-                
-                show(quiz: viewModel)
-            }
+            questionFactory?.self.requestNextQuestion()
         }
     }
     
@@ -161,12 +172,7 @@ final class MovieQuizViewController: UIViewController {
             self.currentQuestionIndex = 0
             self.correctAnswers = 0
             
-            if let firstQuestion = self.questionFactory.requestNextQuestion() {
-                self.currentQuestion = firstQuestion
-                let viewModel = self.convert(model: firstQuestion)
-                
-                self.show(quiz: viewModel)
-            }
+            questionFactory?.requestNextQuestion()
         }
 
                 alert.addAction(action)
@@ -175,18 +181,21 @@ final class MovieQuizViewController: UIViewController {
     
     
     override func viewDidLoad() {
+        super.viewDidLoad()
         
-        imageView.layer.masksToBounds = true //рисуем рамку
+        imageView.layer.masksToBounds = true //разрешаем рисовать рамку
         imageView.layer.cornerRadius = 20 // радиус скругления углов рамки
         
-        //проверяем, что фабрика вернула не nil и показываем первый вопрос
-        if let firstQuestion = questionFactory.requestNextQuestion() {
-            currentQuestion = firstQuestion
-            let viewModel = convert(model: firstQuestion)
-            
-            show(quiz: viewModel)
+        // MARK: - QuestionFactoryDelegate
+        
+        questionFactory = QuestionFactory(delegate: self)
+        
+        func didReceiveNextQuestion(question: QuizQuestion?) {
+                
         }
-        super.viewDidLoad()
+        
+        questionFactory?.requestNextQuestion()
+        
     }
 }
 
@@ -207,4 +216,12 @@ final class MovieQuizViewController: UIViewController {
          questionNumber: "\(currentQuestionIndex + 1)/\(questions.count)")
      return questionToView
  }
+ 
+ 
+ //проверяем, что фабрика вернула не nil и показываем первый вопрос
+ if let firstQuestion = questionFactory.requestNextQuestion() {
+     currentQuestion = firstQuestion
+     let viewModel = convert(model: firstQuestion)
+     
+     show(quiz: viewModel)
  */
