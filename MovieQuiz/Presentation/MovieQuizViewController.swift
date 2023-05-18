@@ -49,10 +49,24 @@ final class MovieQuizViewController: UIViewController {
     // переменная со счётчиком правильных ответов, начальное значение 0
     private var correctAnswers = 0
     
+    //общее количество вопросов для квиза
+    private let questionsAmount: Int = 10
+    
+    //фабрика вопросов к которой обращается контроллер
+    private var questionFactory: QuestionFactory = QuestionFactory()
+    
+    //текущий вопрос, который видит пользователь
+    private var currentQuestion: QuizQuestion?
+    
+    
     
     //no button private func
     @IBAction private func noButtonClicked(_ sender: Any) {
-        let currentQuestion = questions[currentQuestionIndex]
+        
+        guard let currentQuestion = currentQuestion else {
+            return
+        }
+        
             let answer = false
             showAnswerResult(isCorrect: answer == currentQuestion.correctAnswer)
     }
@@ -60,7 +74,10 @@ final class MovieQuizViewController: UIViewController {
     
     //yes button private func
     @IBAction private func yesButtonClicked(_ sender: Any) {
-        let currentQuestion = questions[currentQuestionIndex]
+        
+        guard let currentQuestion = currentQuestion else {
+            return
+        }
             let answer = true
             showAnswerResult(isCorrect: answer == currentQuestion.correctAnswer)
     }
@@ -69,9 +86,13 @@ final class MovieQuizViewController: UIViewController {
     // приватный метод, который и меняет цвет рамки, и вызывает метод перехода
     // принимает на вход булевое значение и ничего не возвращает
     private func showAnswerResult(isCorrect: Bool) {
+        
+        //Проверяем, правильно ли ответил пользователь
         if isCorrect {
                 correctAnswers += 1
             }
+        
+        //показываем рамку зависящего от ответа пользователя цвета
         imageView.layer.borderWidth = 8
         imageView.layer.borderColor = isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
         yesButtonClicked.isEnabled = false //отключаем обе кнопки чтобы не засчитывалось несколько ответов за раз
@@ -90,7 +111,7 @@ final class MovieQuizViewController: UIViewController {
         let questionToView = QuizStepViewModel(
             image: UIImage(named: model.image) ?? UIImage(),
             question: model.text,
-            questionNumber: "\(currentQuestionIndex + 1)/\(questions.count)")
+            questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
         return questionToView
     }
     
@@ -106,9 +127,10 @@ final class MovieQuizViewController: UIViewController {
     private func showNextQuestionOrResults() {
         imageView.layer.borderColor = UIColor.clear.cgColor // setting imageView's border to clear
         
-        if currentQuestionIndex == questions.count - 1 {
-            // идём в состояние "Результат квиза"
-                    let text = "Ваш результат: \(correctAnswers)/10"
+        if currentQuestionIndex == questionsAmount - 1 { // идём в состояние "Результат квиза"
+            let text = correctAnswers == questionsAmount ?
+                    "Поздравляем, Вы ответили на 10 из 10!" :
+                    "Вы ответили на \(correctAnswers) из 10, попробуйте ещё раз!"
                     let viewModel = QuizResultsViewModel(
                         title: "Этот раунд окончен!",
                         text: text,
@@ -116,9 +138,12 @@ final class MovieQuizViewController: UIViewController {
                     showResults(quiz: viewModel)
         } else {
             currentQuestionIndex += 1
-            let nextQuestion = questions[currentQuestionIndex]
-            let viewModel = convert(model: nextQuestion)
-            show(quiz: viewModel)
+            if let nextQuestion = questionFactory.requestNextQuestion() {
+                currentQuestion = nextQuestion
+                let viewModel = convert(model: nextQuestion)
+                
+                show(quiz: viewModel)
+            }
         }
     }
     
@@ -136,9 +161,12 @@ final class MovieQuizViewController: UIViewController {
             self.currentQuestionIndex = 0
             self.correctAnswers = 0
             
-            let firstQuestion = self.questions[self.currentQuestionIndex]
-            let viewModel = self.convert(model: firstQuestion)
-            self.show(quiz: viewModel)
+            if let firstQuestion = self.questionFactory.requestNextQuestion() {
+                self.currentQuestion = firstQuestion
+                let viewModel = self.convert(model: firstQuestion)
+                
+                self.show(quiz: viewModel)
+            }
         }
 
                 alert.addAction(action)
@@ -147,13 +175,36 @@ final class MovieQuizViewController: UIViewController {
     
     
     override func viewDidLoad() {
+        
         imageView.layer.masksToBounds = true //рисуем рамку
         imageView.layer.cornerRadius = 20 // радиус скругления углов рамки
-        // берём текущий вопрос из массива вопросов по индексу текущего вопроса
-        // и вызываем метод show() для первого вопроса
-        let currentQuestion = questions[currentQuestionIndex]
-        let firstQuestion = convert(model: currentQuestion)
-        show(quiz: firstQuestion)
+        
+        //проверяем, что фабрика вернула не nil и показываем первый вопрос
+        if let firstQuestion = questionFactory.requestNextQuestion() {
+            currentQuestion = firstQuestion
+            let viewModel = convert(model: firstQuestion)
+            
+            show(quiz: viewModel)
+        }
         super.viewDidLoad()
     }
 }
+
+
+/*
+ 
+ // берём текущий вопрос из массива вопросов по индексу текущего вопроса
+ // и вызываем метод show() для первого вопроса
+ let currentQuestion = questions[currentQuestionIndex]
+ let firstQuestion = convert(model: currentQuestion)
+ show(quiz: firstQuestion)
+ 
+ // приватный метод конвертации, который принимает моковый вопрос и возвращает вью модель для главного экрана
+ private func convert(model: QuizQuestion) -> QuizStepViewModel {
+     let questionToView = QuizStepViewModel(
+         image: UIImage(named: model.image) ?? UIImage(),
+         question: model.text,
+         questionNumber: "\(currentQuestionIndex + 1)/\(questions.count)")
+     return questionToView
+ }
+ */
