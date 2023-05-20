@@ -15,7 +15,7 @@ struct AlertModel {
     // текст для кнопки алерта
     let buttonText: String
     //замыкание без параметров
-    let completion: (() -> Void) //UIAlertAction
+    let completion: (() -> Void)
 }
 
 /*

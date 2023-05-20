@@ -42,7 +42,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     @IBOutlet weak var yesButtonClicked: UIButton!
     
     
-    private var alertPresenter: AlertPresenterProtoсol
+    private var alertPresenter: AlertPresenterProtoсol?
     
     // переменная с индексом текущего вопроса, начальное значение 0
     private var currentQuestionIndex = 0
@@ -105,7 +105,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         if isCorrect {
                 correctAnswers += 1
             }
-        
         //показываем рамку зависящего от ответа пользователя цвета
         imageView.layer.borderWidth = 8
         imageView.layer.borderColor = isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
@@ -161,7 +160,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
                                                     self.correctAnswers = 0
                                                     questionFactory?.requestNextQuestion()
                                                 })
-            alertPresenter.showResult(in: viewModel)
+            alertPresenter?.showResult(in: viewModel)
             //или показываем следующий вопрос
         } else {
             currentQuestionIndex += 1

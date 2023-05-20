@@ -1,7 +1,6 @@
 
 import UIKit
 
-
 class AlertPresenter: AlertPresenterProtoсol {
     
     private weak var viewController:UIViewController?
