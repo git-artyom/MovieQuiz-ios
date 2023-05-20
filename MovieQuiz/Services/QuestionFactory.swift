@@ -56,7 +56,6 @@ class QuestionFactory: QuestionFactoryProtocol {
     
     weak var delegate: QuestionFactoryDelegate?
     
-    
     //объявляем функцию requestNextQuestion, которая ничего не принимает и возвращает опциональную модель QuizQuestion
     func requestNextQuestion() {
         guard let index = (0..<questions.count).randomElement() else {
