@@ -1,6 +1,8 @@
 
 import UIKit
 
+
+//класс для вызова алерта
 class AlertPresenter: AlertPresenterProtoсol {
     
     private weak var viewController:UIViewController?

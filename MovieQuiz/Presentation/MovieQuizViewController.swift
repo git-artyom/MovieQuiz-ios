@@ -7,29 +7,18 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
      
      Спасибо за ревью!
      
-     ________00000000000000______00000000000000________
-     ______000000000000000000__0000000000000000000_____
-     ____000000000000000000000000000000________00000___
-     ___0000000000000000000000000000000__________0000__
-     __0000000000000000000000000000000000__________000_
-     __00000000000000000000000000000000000000_____0000_
-     _00000000000000000000000000000000000000000___00000
-     _000000000000000000000000000000000000000000_000000
-     _000000000000000000000000000000000000000000000000_
-     _000000000000000000000000000000000000000000000000_
-     __00000000000000000000000000000000000000000000000_
-     ___000000000000000000000000000000000000000000000__
-     _____00000000000000000000000000000000000000000____
-     _______0000000000000000000000000000000000000______
-     __________0000000000000000000000000000000_________
-     _____________00000000000000000000000000___________
-     _______________00000000000000000000______________
-     __________________000000000000000________________
-     ____________________0000000000___________________
-     ______________________000000_____________________
-     _______________________0000______________________
-     ________________________00_______________________
-     -------------------------------------------------
+     🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤
+     🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤
+     🖤🖤❤❤❤🖤❤❤❤🖤🖤
+     🖤❤❤❤❤❤❤❤❤❤🖤
+     🖤❤❤❤❤❤❤❤❤❤🖤
+     🖤🖤❤❤❤❤❤❤❤🖤🖤
+     🖤🖤🖤❤❤❤❤❤🖤🖤🖤
+     🖤🖤🖤🖤❤❤❤🖤🖤🖤🖤
+     🖤🖤🖤🖤🖤❤🖤🖤🖤🖤🖤
+     🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤
+     🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤
+
      */
     
   
@@ -41,7 +30,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     @IBOutlet weak var noButtonClicked: UIButton!
     @IBOutlet weak var yesButtonClicked: UIButton!
     
-    
+    //тут у нас иньекция зависимостей, инициализируем во viewDidLoad()
     private var alertPresenter: AlertPresenterProtoсol?
     
     // переменная с индексом текущего вопроса, начальное значение 0
@@ -58,6 +47,9 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     //текущий вопрос, который видит пользователь
     private var currentQuestion: QuizQuestion?
+    
+    //статистика
+    private var statisticService: StatisticService?
     
     
     func didReceiveNextQuestion(question: QuizQuestion?) {
@@ -144,23 +136,34 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         
         // идём в состояние "Результат квиза"
         if currentQuestionIndex == questionsAmount - 1 {
-            let text = correctAnswers == questionsAmount ?
-                    "Поздравляем, Вы ответили на 10 из 10!" :
-                    "Вы ответили на \(correctAnswers) из 10, попробуйте ещё раз!"
-                    let viewModel = AlertModel (  /*QuizResultsViewModel*/
-                                                title: "Этот раунд окончен!",
-                                                message: text,
-                                                buttonText: "Сыграть ещё раз",
-                                                completion: { [weak self] in
-                                                    guard let self else { return }
-                                                    self.yesButtonClicked.isEnabled = true // включаем кнопки
-                                                    self.noButtonClicked.isEnabled = true
-                                                    self.imageView.layer.borderColor = UIColor.clear.cgColor
-                                                    self.currentQuestionIndex = 0  //сбрасываем счетчики
-                                                    self.correctAnswers = 0
-                                                    questionFactory?.requestNextQuestion()
-                                                })
+            
+            guard let statisticService = statisticService else {
+                print("Не удалось загрузить статистику!")
+                return
+            }
+            statisticService.store(correct: correctAnswers, total: questionsAmount)
+            let bestGame = statisticService.bestGame
+            let viewModel = AlertModel(title: "Этот раунд окончен!",
+                                   message: """
+                                Ваш результат: \(correctAnswers)/\(questionsAmount)
+                                Количество сыгранных квизов: \(statisticService.gamesCount)
+                                Рекорд: \(statisticService.bestGame.correct)/\(statisticService.bestGame.total) (\(bestGame.date.dateTimeString))
+                                Средняя точность: \(String(format: "%.2f", statisticService.totalAccuracy))%
+                                """,
+                                   buttonText: "Сыграть еще раз",
+                                   completion: { [weak self] in
+                guard let self = self else {
+                    return
+                }
+                self.yesButtonClicked.isEnabled = true // включаем кнопки
+                self.noButtonClicked.isEnabled = true
+                self.imageView.layer.borderColor = UIColor.clear.cgColor
+                self.currentQuestionIndex = 0  //сбрасываем счетчики
+                self.correctAnswers = 0
+                questionFactory?.requestNextQuestion() //запрашиваем новый вопрос
+            })
             alertPresenter?.showResult(in: viewModel)
+            
             //или показываем следующий вопрос
         } else {
             currentQuestionIndex += 1
@@ -174,17 +177,20 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         imageView.layer.masksToBounds = true //разрешаем рисовать рамку
         imageView.layer.cornerRadius = 20 // радиус скругления углов рамки
         
+        //инициализируем статистику
+        statisticService = StatisticServiceImplementation()
+        
         //инициализируем алерт
         alertPresenter = AlertPresenter(viewController: self)
         
         // MARK: - QuestionFactoryDelegate
         
-        //инициализируем делегат
+        //инициализируем делегат фабрики вопросов
         questionFactory = QuestionFactory(delegate: self)
         
         func didReceiveNextQuestion(question: QuizQuestion?) {
         }
-        
+        //запрашиваем первый вопрос
         questionFactory?.requestNextQuestion()
     }
 }
@@ -261,5 +267,24 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
              self.present(alert, animated: true, completion: nil)
  }
  
+ 
+ 
+ let text = correctAnswers == questionsAmount ?
+         "Поздравляем, Вы ответили на 10 из 10!" :
+         "Вы ответили на \(correctAnswers) из 10, попробуйте ещё раз!"
+         let viewModel = AlertModel (  /*QuizResultsViewModel*/
+                                     title: "Этот раунд окончен!",
+                                     message: text,
+                                     buttonText: "Сыграть ещё раз",
+                                     completion: { [weak self] in
+                                         guard let self else { return }
+                                         self.yesButtonClicked.isEnabled = true // включаем кнопки
+                                         self.noButtonClicked.isEnabled = true
+                                         self.imageView.layer.borderColor = UIColor.clear.cgColor
+                                         self.currentQuestionIndex = 0  //сбрасываем счетчики
+                                         self.correctAnswers = 0
+                                         questionFactory?.requestNextQuestion()//запрашиваем новый вопрос
+                                     })
+ alertPresenter?.showResult(in: viewModel)
  
  */
