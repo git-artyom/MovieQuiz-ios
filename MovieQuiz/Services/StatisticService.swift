@@ -1,7 +1,7 @@
 
 import Foundation
 
-
+//протокол для класса статистики
 protocol StatisticService {
     
     var totalAccuracy: Double { get }
@@ -12,7 +12,7 @@ protocol StatisticService {
     func store(correct count: Int, total amount: Int)
 }
 
-//модель для message в алерте
+//структура для хранения результатов лучшей попытки
 struct GameRecord: Codable, Comparable {
     let correct: Int
     let total: Int
@@ -73,7 +73,7 @@ final class StatisticServiceImplementation: StatisticService {
     
     //общая точность
     var totalAccuracy: Double {
-        Double(correctAnswers) / Double(total) * 100
+        (Double(correctAnswers) / Double(total)) * 100
     }
     
     
@@ -120,10 +120,14 @@ final class StatisticServiceImplementation: StatisticService {
     
     //метод сохранения лучшего результата, вызывается в методе показа результата
     func store(correct count: Int, total amount: Int) {
-        self.total += amount
+        
+            //увеличиваем счетчики на 1
+            self.total += amount
             self.correctAnswers += count
             self.gamesCount += 1
             let currentGame = GameRecord(correct: count, total: amount, date: Date())
+        
+            // если условия выполняются то обновляем результаты лучшей игры
                 if bestGame < currentGame {
                     bestGame = currentGame
             }
