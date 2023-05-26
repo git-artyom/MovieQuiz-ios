@@ -21,7 +21,10 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
 
      */
     
-  
+    
+    
+    @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
+    
     @IBOutlet private var QuestionLabel: UILabel!
     @IBOutlet private var imageView: UIImageView!
     @IBOutlet private var textLabel: UILabel!
@@ -170,6 +173,43 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             questionFactory?.self.requestNextQuestion()
         }
     }
+    
+    
+    
+    //метод показа индикатора загрузки
+    private func showLoadingIndicator() {
+        activityIndicator.isHidden = false // говорим, что индикатор загрузки не скрыт
+        activityIndicator.startAnimating() // включаем анимацию
+    }
+    
+    //метод скрытия индикатора загрузки
+    private func hideLoadingIndicator() {
+        activityIndicator.isHidden = true // скрываем индикатор
+        activityIndicator.stopAnimating() // отключаем анимацию
+    }
+    
+    
+    //метод вызова алерта с отображением типа ошибки
+    private func showNetworkError(message: String) {
+        
+        //скрываем индикатор загрузки
+        hideLoadingIndicator()
+        
+        //передаем данные в модель для отображения в алерте
+        let model = AlertModel(title: "Ошибка",
+                               message: message,
+                               buttonText: "Попробовать еще раз") { [weak self] in
+            guard let self = self else { return }
+            
+            self.currentQuestionIndex = 0
+            self.correctAnswers = 0
+            
+            self.questionFactory?.requestNextQuestion()
+        }
+        
+        alertPresenter?.showResult(in: model)
+    }
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
