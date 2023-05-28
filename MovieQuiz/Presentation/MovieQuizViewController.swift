@@ -6,18 +6,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     /*
      
      Спасибо за ревью!
-     
-     🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤
-     🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤
-     🖤🖤❤❤❤🖤❤❤❤🖤🖤
-     🖤❤❤❤❤❤❤❤❤❤🖤
-     🖤❤❤❤❤❤❤❤❤❤🖤
-     🖤🖤❤❤❤❤❤❤❤🖤🖤
-     🖤🖤🖤❤❤❤❤❤🖤🖤🖤
-     🖤🖤🖤🖤❤❤❤🖤🖤🖤🖤
-     🖤🖤🖤🖤🖤❤🖤🖤🖤🖤🖤
-     🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤
-     🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤
 
      */
     
@@ -117,7 +105,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     // приватный метод конвертации, который принимает моковый вопрос и возвращает вью модель для главного экрана
     private func convert(model: QuizQuestion) -> QuizStepViewModel {
         let questionToView = QuizStepViewModel(
-            image: UIImage(named: model.image) ?? UIImage(),
+            image: UIImage(data: model.image) ?? UIImage(),
             question: model.text,
             questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
         return questionToView
@@ -235,12 +223,15 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         // MARK: - QuestionFactoryDelegate
         
         //инициализируем делегат фабрики вопросов
-        questionFactory = QuestionFactory(delegate: self)
+        questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
         
-        func didReceiveNextQuestion(question: QuizQuestion?) {
-        }
-        //запрашиваем первый вопрос
-        questionFactory?.requestNextQuestion()
+        func didReceiveNextQuestion(question: QuizQuestion?) {}
+        
+        // показываем индикатор загрузки
+        showLoadingIndicator()
+        
+        //начинаем загрузку данных
+        questionFactory?.loadData()
     }
 }
 
