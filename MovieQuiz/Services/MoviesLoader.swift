@@ -7,7 +7,9 @@ protocol MoviesLoading {
     func loadMovies(handler: @escaping (Result<MostPopularMovies, Error>) -> Void)
 }
 
+//Сервис для загрузки фильмов используя NetworkClient и преобразования их в модель данных MostPopularMovies.
 struct MoviesLoader: MoviesLoading {
+    
     //MARK: - NetworClient
     private let networkClient = NetworkClient()
     

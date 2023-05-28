@@ -210,6 +210,15 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         alertPresenter?.showResult(in: model)
     }
     
+    func didLoadDataFromServer() {
+        hideLoadingIndicator()
+        questionFactory?.requestNextQuestion()
+    }
+
+    func didFailToLoadData(with error: Error) {
+        showNetworkError(message: error.localizedDescription) // возьмём в качестве сообщения описание ошибки
+    }
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -235,96 +244,3 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
 }
 
-
-/*
- 
- это старый код, оставлю на память
- 
- // берём текущий вопрос из массива вопросов по индексу текущего вопроса
- // и вызываем метод show() для первого вопроса
- let currentQuestion = questions[currentQuestionIndex]
- let firstQuestion = convert(model: currentQuestion)
- show(quiz: firstQuestion)
- 
- // приватный метод конвертации, который принимает моковый вопрос и возвращает вью модель для главного экрана
- private func convert(model: QuizQuestion) -> QuizStepViewModel {
-     let questionToView = QuizStepViewModel(
-         image: UIImage(named: model.image) ?? UIImage(),
-         question: model.text,
-         questionNumber: "\(currentQuestionIndex + 1)/\(questions.count)")
-     return questionToView
- }
- 
- 
- //проверяем, что фабрика вернула не nil и показываем первый вопрос
- if let firstQuestion = questionFactory.requestNextQuestion() {
-     currentQuestion = firstQuestion
-     let viewModel = convert(model: firstQuestion)
-     
-     show(quiz: viewModel)
- 
- 
- 
- // приватный метод для показа результатов раунда квиза
- // принимает вью модель QuizResultsViewModel и ничего не возвращает
- private func showResults(quiz result: QuizResultsViewModel) {
-     let alert = UIAlertController(
-                 title: result.title,
-                 message: result.text,
-                 preferredStyle: .alert)
-
-     let action = UIAlertAction(title: result.buttonText, style: .default) { [weak self] _ in //через слабую ссылку избавляемся от ретейн цикла
-         guard let self = self else { return } // анврапим слабую ссылку
-         
-         self.currentQuestionIndex = 0
-         self.correctAnswers = 0
-         
-         questionFactory?.requestNextQuestion()
-     }
-
-             alert.addAction(action)
-             self.present(alert, animated: true, completion: nil)
- }
- 
- // приватный метод для показа результатов раунда квиза
- // принимает вью модель QuizResultsViewModel и ничего не возвращает
- private func showResults(quiz result: AlertModel) {
-     let alert = UIAlertController(
-                 title: result.title,
-                 message: result.message,
-                 preferredStyle: .alert)
-
-     let action = UIAlertAction(title: result.buttonText, style: .default) { [weak self] _ in //через слабую ссылку избавляемся от ретейн цикла
-         guard let self = self else { return } // анврапим слабую ссылку
-         
-         self.currentQuestionIndex = 0
-         self.correctAnswers = 0
-         
-         questionFactory?.requestNextQuestion()
-     }
-
-             alert.addAction(action)
-             self.present(alert, animated: true, completion: nil)
- }
- 
- 
- 
- let text = correctAnswers == questionsAmount ?
-         "Поздравляем, Вы ответили на 10 из 10!" :
-         "Вы ответили на \(correctAnswers) из 10, попробуйте ещё раз!"
-         let viewModel = AlertModel (  /*QuizResultsViewModel*/
-                                     title: "Этот раунд окончен!",
-                                     message: text,
-                                     buttonText: "Сыграть ещё раз",
-                                     completion: { [weak self] in
-                                         guard let self else { return }
-                                         self.yesButtonClicked.isEnabled = true // включаем кнопки
-                                         self.noButtonClicked.isEnabled = true
-                                         self.imageView.layer.borderColor = UIColor.clear.cgColor
-                                         self.currentQuestionIndex = 0  //сбрасываем счетчики
-                                         self.correctAnswers = 0
-                                         questionFactory?.requestNextQuestion()//запрашиваем новый вопрос
-                                     })
- alertPresenter?.showResult(in: viewModel)
- 
- */

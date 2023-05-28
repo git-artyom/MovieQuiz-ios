@@ -1,7 +1,7 @@
 
 import Foundation
 
-
+// модель данных, в которую можно преобразовать ответ от API IMDb
 struct MostPopularMovies: Codable {
     let errorMessage: String
     let items: [MostPopularMovie]
