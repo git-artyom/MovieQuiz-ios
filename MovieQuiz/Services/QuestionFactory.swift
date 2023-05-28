@@ -83,10 +83,13 @@ class QuestionFactory: QuestionFactoryProtocol {
                 print("Failed to load image")
             }
             
+            // создаем случайное число в заданном диапазоне чтобы вывести его в поле text
+            let randomNumber = Int.random(in: 3...7)
+            
             // Создаём вопрос, определяем его корректность и создаём модель вопроса
             let rating = Float(movie.rating) ?? 0 // превращаем строку в число
-            let text = "Рейтинг этого фильма больше чем 7?"
-            let correctAnswer = rating > 7
+            let text = "Рейтинг этого фильма больше чем \(randomNumber)?"
+            let correctAnswer = rating > Float(randomNumber)
             
             let question = QuizQuestion(image: imageData,
                                         text: text,
@@ -129,7 +132,7 @@ class QuestionFactory: QuestionFactoryProtocol {
                     self.delegate?.didLoadDataFromServer() // сообщаем, что данные загрузились
                     
                 case .failure(let error):
-                    self.delegate?.didFailToLoadData(with: error) //// сообщаем об ошибке нашему MovieQuizViewController
+                    self.delegate?.didFailToLoadData(with: error) // сообщаем об ошибке нашему MovieQuizViewController
                 }
             }
         }

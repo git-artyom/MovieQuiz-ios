@@ -10,7 +10,7 @@ protocol MoviesLoading {
 //Сервис для загрузки фильмов используя NetworkClient и преобразования их в модель данных MostPopularMovies.
 struct MoviesLoader: MoviesLoading {
     
-    //MARK: - NetworClient
+    //MARK: - NetworkClient
     private let networkClient = NetworkClient()
     
     // MARK: - URL

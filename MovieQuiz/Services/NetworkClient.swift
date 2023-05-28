@@ -17,13 +17,14 @@ struct NetworkClient {
         // заполняем константу данными через метод URLSession
         // в замыкании возвращаем ошибку, если есть, код ошибки, если есть, и данные
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            
             // Проверяем, пришла ли ошибка
             if let error = error {
                 handler(.failure(error))
                 return
             }
             
-            // Обрабатываем код ответа и проверяем, что нам пришёл успешный код ответа
+            // Обрабатываем код ответа и проверяем, что ответ сервера положительный
             if let response = response as? HTTPURLResponse,
                response.statusCode < 200 || response.statusCode >= 300 {
                 handler(.failure(NetworkError.codeError))

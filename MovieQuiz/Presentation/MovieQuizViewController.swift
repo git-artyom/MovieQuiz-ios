@@ -10,6 +10,34 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
      */
     
     
+    // MARK: - viewDidLoad
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        imageView.layer.masksToBounds = true //разрешаем рисовать рамку
+        imageView.layer.cornerRadius = 20 // радиус скругления углов рамки
+        
+        //инициализируем статистику
+        statisticService = StatisticServiceImplementation()
+        
+        //инициализируем алерт
+        alertPresenter = AlertPresenter(viewController: self)
+        
+        // MARK: - QuestionFactoryDelegate
+        
+        //инициализируем делегат фабрики вопросов
+        questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
+        
+        func didReceiveNextQuestion(question: QuizQuestion?) {}
+        
+        // показываем индикатор загрузки
+        showLoadingIndicator()
+        
+        //начинаем загрузку данных
+        questionFactory?.loadData()
+    }
+    
+    
     
     @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
     
@@ -143,9 +171,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
                                 """,
                                    buttonText: "Сыграть еще раз",
                                    completion: { [weak self] in
-                guard let self = self else {
-                    return
-                }
+                guard let self = self else { return }
+                
                 self.yesButtonClicked.isEnabled = true // включаем кнопки
                 self.noButtonClicked.isEnabled = true
                 self.imageView.layer.borderColor = UIColor.clear.cgColor
@@ -208,30 +235,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
     
     
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        imageView.layer.masksToBounds = true //разрешаем рисовать рамку
-        imageView.layer.cornerRadius = 20 // радиус скругления углов рамки
-        
-        //инициализируем статистику
-        statisticService = StatisticServiceImplementation()
-        
-        //инициализируем алерт
-        alertPresenter = AlertPresenter(viewController: self)
-        
-        // MARK: - QuestionFactoryDelegate
-        
-        //инициализируем делегат фабрики вопросов
-        questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
-        
-        func didReceiveNextQuestion(question: QuizQuestion?) {}
-        
-        // показываем индикатор загрузки
-        showLoadingIndicator()
-        
-        //начинаем загрузку данных
-        questionFactory?.loadData()
-    }
+    
 }
 
