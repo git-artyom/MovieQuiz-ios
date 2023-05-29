@@ -84,12 +84,29 @@ class QuestionFactory: QuestionFactoryProtocol {
             }
             
             // создаем случайное число в заданном диапазоне чтобы вывести его в поле text
-            let randomNumber = Int.random(in: 3...7)
+            let randomNumber = Int.random(in: 3...9)
             
+            // шаблон для вопроса больше/меньше
+            let moreOrLess = ["больше", "меньше"].randomElement()
+
             // Создаём вопрос, определяем его корректность и создаём модель вопроса
             let rating = Float(movie.rating) ?? 0 // превращаем строку в число
-            let text = "Рейтинг этого фильма больше чем \(randomNumber)?"
-            let correctAnswer = rating > Float(randomNumber)
+            let text = "Рейтинг этого фильма \(moreOrLess!) чем \(randomNumber)?"
+            
+            var correctAnswer: Bool {
+                if rating > Float(randomNumber) && moreOrLess! == "больше" {
+                    return rating > Float(randomNumber)
+                    
+                } else if rating < Float(randomNumber) && moreOrLess! == "больше" {
+                        return rating < Float(randomNumber)
+                    
+                } else if rating > Float(randomNumber) && moreOrLess! == "меньше" {
+                    return rating < Float(randomNumber)
+                    
+                } else {
+                    return rating > Float(randomNumber)
+                }
+            }
             
             let question = QuizQuestion(image: imageData,
                                         text: text,
@@ -113,6 +130,11 @@ class QuestionFactory: QuestionFactoryProtocol {
          let question = questions[safe: index]
          delegate?.didReceiveNextQuestion(question: question)
          //safe — это функция, которую мы добавили в расширении массива. эта функция позволяет безопасно достать элемент из массива. «Безопасно» — то есть если индекс выйдет за пределы размера массива, вместо крэша нам вернётся просто nil
+         
+         
+         let rating = Float(movie.rating) ?? 0 // превращаем строку в число
+         let text = "Рейтинг этого фильма больше чем \(randomNumber)?"
+         let correctAnswer = rating > Float(randomNumber)
          */
     }
     
