@@ -7,6 +7,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
      
      Спасибо за ревью!
 
+     по приколу добавил метод создания фейерверка в конце квиза, метод showFirework() изображение для генерации хранится в ассетах)
+     
      */
     
     
@@ -160,6 +162,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
                 print("Не удалось загрузить статистику!")
                 return
             }
+            showFirework()
             statisticService.store(correct: correctAnswers, total: questionsAmount)
             let bestGame = statisticService.bestGame
             let viewModel = AlertModel(title: "Этот раунд окончен!",
@@ -184,6 +187,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             
             //или показываем следующий вопрос
         } else {
+            
             currentQuestionIndex += 1
             questionFactory?.self.requestNextQuestion()
         }
@@ -233,6 +237,56 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         showNetworkError(message: error.localizedDescription) // возьмём в качестве сообщения описание ошибки
     }
     
+    func showFirework() {
+        let emitter = CAEmitterLayer()
+        emitter.emitterPosition = CGPoint(x: view.bounds.midX, y: view.bounds.maxY)
+        emitter.emitterSize = CGSize(width: 100, height: 100)
+        emitter.emitterShape = .circle
+        emitter.emitterMode = .outline
+        
+        let cell = CAEmitterCell()
+        cell.contents = UIImage(named: "spark.png")?.cgImage
+        cell.birthRate = 50
+        cell.lifetime = 1.5
+        cell.velocity = 200
+        cell.velocityRange = 50
+        cell.emissionLongitude = -.pi / 2
+        cell.emissionRange = .pi / 4
+        cell.scale = 0.1
+        cell.scaleRange = 0.05
+        cell.alphaSpeed = -0.1
+        cell.color = UIColor(red: 1, green: 0.5, blue: 0.1, alpha: 1).cgColor
+        
+        emitter.emitterCells = [cell]
+        view.layer.addSublayer(emitter)
+        
+        let animation = CABasicAnimation(keyPath: "emitterCells.cell.scale")
+        animation.fromValue = 0.1
+        animation.toValue = 1
+        animation.duration = 0.5
+        animation.timingFunction = CAMediaTimingFunction(name: .easeOut)
+        
+        let moveAnimation = CABasicAnimation(keyPath: "emitterPosition.y")
+        moveAnimation.fromValue = view.bounds.maxY
+        moveAnimation.toValue = view.bounds.midY
+        moveAnimation.duration = 0.5
+        moveAnimation.timingFunction = CAMediaTimingFunction(name: .easeOut)
+        emitter.add(moveAnimation, forKey: "move")
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+            emitter.removeFromSuperlayer()
+        }
+    }
+/*
+ Здесь мы устанавливаем emitterMode в outline, чтобы частицы стреляли вверх, а emitterShape в circle, чтобы частицы распределялись равномерно вокруг центральной точки. Затем мы устанавливаем emitterSize в размер, который мы хотим, чтобы занимал наш эффект фейерверка на экране.
+
+ Затем мы создаем CAEmitterCell, который будет использоваться для создания частиц. Мы устанавливаем изображение, которое будет использоваться для отображения частиц, а также различные свойства, такие как скорость, время жизни, цвет и т.д.
+
+ Затем мы добавляем CAEmitterCell в CAEmitterLayer и добавляем CAEmitterLayer на экран. Мы также создаем анимацию, которая увеличивает размер частиц и анимацию, которая перемещает CAEmitterLayer вверх на экране.
+
+ */
+
+
     
     
 }
