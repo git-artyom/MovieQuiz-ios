@@ -10,52 +10,52 @@ import Foundation
 class QuestionFactory: QuestionFactoryProtocol {
     
     /*
-    // массив моковых вопросов
-    private let questions: [QuizQuestion] = [
-            QuizQuestion(
-                image: "The Godfather",
-                text: "Рейтинг этого фильма больше чем 6?",
-                correctAnswer: true),
-            QuizQuestion(
-                image: "The Dark Knight",
-                text: "Рейтинг этого фильма больше чем 6?",
-                correctAnswer: true),
-            QuizQuestion(
-                image: "Kill Bill",
-                text: "Рейтинг этого фильма больше чем 6?",
-                correctAnswer: true),
-            QuizQuestion(
-                image: "The Avengers",
-                text: "Рейтинг этого фильма больше чем 6?",
-                correctAnswer: true),
-            QuizQuestion(
-                image: "Deadpool",
-                text: "Рейтинг этого фильма больше чем 6?",
-                correctAnswer: true),
-            QuizQuestion(
-                image: "The Green Knight",
-                text: "Рейтинг этого фильма больше чем 6?",
-                correctAnswer: true),
-            QuizQuestion(
-                image: "Old",
-                text: "Рейтинг этого фильма больше чем 6?",
-                correctAnswer: false),
-            QuizQuestion(
-                image: "The Ice Age Adventures of Buck Wild",
-                text: "Рейтинг этого фильма больше чем 6?",
-                correctAnswer: false),
-            QuizQuestion(
-                image: "Tesla",
-                text: "Рейтинг этого фильма больше чем 6?",
-                correctAnswer: false),
-            QuizQuestion(
-                image: "Vivarium",
-                text: "Рейтинг этого фильма больше чем 6?",
-                correctAnswer: false)
-        ]
-   */
+     // массив моковых вопросов
+     private let questions: [QuizQuestion] = [
+     QuizQuestion(
+     image: "The Godfather",
+     text: "Рейтинг этого фильма больше чем 6?",
+     correctAnswer: true),
+     QuizQuestion(
+     image: "The Dark Knight",
+     text: "Рейтинг этого фильма больше чем 6?",
+     correctAnswer: true),
+     QuizQuestion(
+     image: "Kill Bill",
+     text: "Рейтинг этого фильма больше чем 6?",
+     correctAnswer: true),
+     QuizQuestion(
+     image: "The Avengers",
+     text: "Рейтинг этого фильма больше чем 6?",
+     correctAnswer: true),
+     QuizQuestion(
+     image: "Deadpool",
+     text: "Рейтинг этого фильма больше чем 6?",
+     correctAnswer: true),
+     QuizQuestion(
+     image: "The Green Knight",
+     text: "Рейтинг этого фильма больше чем 6?",
+     correctAnswer: true),
+     QuizQuestion(
+     image: "Old",
+     text: "Рейтинг этого фильма больше чем 6?",
+     correctAnswer: false),
+     QuizQuestion(
+     image: "The Ice Age Adventures of Buck Wild",
+     text: "Рейтинг этого фильма больше чем 6?",
+     correctAnswer: false),
+     QuizQuestion(
+     image: "Tesla",
+     text: "Рейтинг этого фильма больше чем 6?",
+     correctAnswer: false),
+     QuizQuestion(
+     image: "Vivarium",
+     text: "Рейтинг этого фильма больше чем 6?",
+     correctAnswer: false)
+     ]
+     */
     
-    private weak var delegate: QuestionFactoryDelegate? 
+    private weak var delegate: QuestionFactoryDelegate?
     
     private let moviesLoader: MoviesLoading // протокол с методом загрузки данных
     
@@ -88,7 +88,7 @@ class QuestionFactory: QuestionFactoryProtocol {
             
             // шаблон для вопроса больше/меньше
             let moreOrLess = ["больше", "меньше"].randomElement()
-
+            
             // Создаём вопрос, определяем его корректность и создаём модель вопроса
             let rating = Float(movie.rating) ?? 0 // превращаем строку в число
             let text = "Рейтинг этого фильма \(moreOrLess!) чем \(randomNumber)?"
@@ -98,7 +98,7 @@ class QuestionFactory: QuestionFactoryProtocol {
                     return rating > Float(randomNumber)
                     
                 } else if rating < Float(randomNumber) && moreOrLess! == "больше" {
-                        return rating < Float(randomNumber)
+                    return rating < Float(randomNumber)
                     
                 } else if rating > Float(randomNumber) && moreOrLess! == "меньше" {
                     return rating < Float(randomNumber)
@@ -119,23 +119,6 @@ class QuestionFactory: QuestionFactoryProtocol {
             }
         }
         
-        
-        
-        /* старый метод
-         guard let index = (0..<questions.count).randomElement() else {
-         delegate?.didReceiveNextQuestion(question: nil)
-         return
-         }
-         
-         let question = questions[safe: index]
-         delegate?.didReceiveNextQuestion(question: question)
-         //safe — это функция, которую мы добавили в расширении массива. эта функция позволяет безопасно достать элемент из массива. «Безопасно» — то есть если индекс выйдет за пределы размера массива, вместо крэша нам вернётся просто nil
-         
-         
-         let rating = Float(movie.rating) ?? 0 // превращаем строку в число
-         let text = "Рейтинг этого фильма больше чем \(randomNumber)?"
-         let correctAnswer = rating > Float(randomNumber)
-         */
     }
     
     

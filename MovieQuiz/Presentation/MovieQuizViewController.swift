@@ -77,7 +77,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         guard let question = question else {
             return
         }
-        
+        hideLoadingIndicator()
         currentQuestion = question
         let viewModel = convert(model: question)
         DispatchQueue.main.async { [weak self] in
@@ -162,7 +162,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
                 print("Не удалось загрузить статистику!")
                 return
             }
-            showFirework()
+            
             statisticService.store(correct: correctAnswers, total: questionsAmount)
             let bestGame = statisticService.bestGame
             let viewModel = AlertModel(title: "Этот раунд окончен!",
@@ -187,7 +187,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             
             //или показываем следующий вопрос
         } else {
-            
+            showLoadingIndicator()
             currentQuestionIndex += 1
             questionFactory?.self.requestNextQuestion()
         }
@@ -216,14 +216,14 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         //передаем данные в модель для отображения в алерте
         let model = AlertModel(title: "Ошибка",
                                message: message,
-                               buttonText: "Попробовать еще раз") { [weak self] in
+                               buttonText: "Попробовать еще раз",
+                               completion: { [weak self] in
             guard let self = self else { return }
             
             self.currentQuestionIndex = 0
             self.correctAnswers = 0
-            
-            self.questionFactory?.requestNextQuestion()
-        }
+            questionFactory?.loadData()
+        })
         
         alertPresenter?.showResult(in: model)
     }
@@ -237,7 +237,10 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         showNetworkError(message: error.localizedDescription) // возьмём в качестве сообщения описание ошибки
     }
     
+    /*
     func showFirework() {
+        CATransaction.begin()
+        
         let emitter = CAEmitterLayer()
         emitter.emitterPosition = CGPoint(x: view.bounds.midX, y: view.bounds.maxY)
         emitter.emitterSize = CGSize(width: 100, height: 100)
@@ -263,7 +266,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         let animation = CABasicAnimation(keyPath: "emitterCells.cell.scale")
         animation.fromValue = 0.1
         animation.toValue = 1
-        animation.duration = 0.5
+        animation.duration = 5.0
         animation.timingFunction = CAMediaTimingFunction(name: .easeOut)
         
         let moveAnimation = CABasicAnimation(keyPath: "emitterPosition.y")
@@ -272,12 +275,12 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         moveAnimation.duration = 0.5
         moveAnimation.timingFunction = CAMediaTimingFunction(name: .easeOut)
         emitter.add(moveAnimation, forKey: "move")
+         
+        CATransaction.setCompletionBlock({emitter.removeFromSuperlayer()})
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
-            emitter.removeFromSuperlayer()
-        }
+        CATransaction.commit()
     }
-/*
+
  Здесь мы устанавливаем emitterMode в outline, чтобы частицы стреляли вверх, а emitterShape в circle, чтобы частицы распределялись равномерно вокруг центральной точки. Затем мы устанавливаем emitterSize в размер, который мы хотим, чтобы занимал наш эффект фейерверка на экране.
 
  Затем мы создаем CAEmitterCell, который будет использоваться для создания частиц. Мы устанавливаем изображение, которое будет использоваться для отображения частиц, а также различные свойства, такие как скорость, время жизни, цвет и т.д.
