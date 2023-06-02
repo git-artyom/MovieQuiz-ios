@@ -6,22 +6,43 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     /*
      
      Спасибо за ревью!
-     
-     🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤
-     🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤
-     🖤🖤❤❤❤🖤❤❤❤🖤🖤
-     🖤❤❤❤❤❤❤❤❤❤🖤
-     🖤❤❤❤❤❤❤❤❤❤🖤
-     🖤🖤❤❤❤❤❤❤❤🖤🖤
-     🖤🖤🖤❤❤❤❤❤🖤🖤🖤
-     🖤🖤🖤🖤❤❤❤🖤🖤🖤🖤
-     🖤🖤🖤🖤🖤❤🖤🖤🖤🖤🖤
-     🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤
-     🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤
 
+     по приколу добавил метод создания фейерверка в конце квиза, метод showFirework() изображение для генерации хранится в ассетах)
+     
      */
     
-  
+    
+    // MARK: - viewDidLoad
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        imageView.layer.masksToBounds = true //разрешаем рисовать рамку
+        imageView.layer.cornerRadius = 20 // радиус скругления углов рамки
+        
+        //инициализируем статистику
+        statisticService = StatisticServiceImplementation()
+        
+        //инициализируем алерт
+        alertPresenter = AlertPresenter(viewController: self)
+        
+        // MARK: - QuestionFactoryDelegate
+        
+        //инициализируем делегат фабрики вопросов
+        questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
+        
+        func didReceiveNextQuestion(question: QuizQuestion?) {}
+        
+        // показываем индикатор загрузки
+        showLoadingIndicator()
+        
+        //начинаем загрузку данных
+        questionFactory?.loadData()
+    }
+    
+    
+    
+    @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
+    
     @IBOutlet private var QuestionLabel: UILabel!
     @IBOutlet private var imageView: UIImageView!
     @IBOutlet private var textLabel: UILabel!
@@ -56,7 +77,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         guard let question = question else {
             return
         }
-        
+        hideLoadingIndicator()
         currentQuestion = question
         let viewModel = convert(model: question)
         DispatchQueue.main.async { [weak self] in
@@ -114,7 +135,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     // приватный метод конвертации, который принимает моковый вопрос и возвращает вью модель для главного экрана
     private func convert(model: QuizQuestion) -> QuizStepViewModel {
         let questionToView = QuizStepViewModel(
-            image: UIImage(named: model.image) ?? UIImage(),
+            image: UIImage(data: model.image) ?? UIImage(),
             question: model.text,
             questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
         return questionToView
@@ -141,6 +162,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
                 print("Не удалось загрузить статистику!")
                 return
             }
+            
             statisticService.store(correct: correctAnswers, total: questionsAmount)
             let bestGame = statisticService.bestGame
             let viewModel = AlertModel(title: "Этот раунд окончен!",
@@ -152,9 +174,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
                                 """,
                                    buttonText: "Сыграть еще раз",
                                    completion: { [weak self] in
-                guard let self = self else {
-                    return
-                }
+                guard let self = self else { return }
+                
                 self.yesButtonClicked.isEnabled = true // включаем кнопки
                 self.noButtonClicked.isEnabled = true
                 self.imageView.layer.borderColor = UIColor.clear.cgColor
@@ -166,125 +187,110 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             
             //или показываем следующий вопрос
         } else {
+            showLoadingIndicator()
             currentQuestionIndex += 1
             questionFactory?.self.requestNextQuestion()
         }
     }
     
-    override func viewDidLoad() {
-        super.viewDidLoad()
+    
+    //метод показа индикатора загрузки
+    private func showLoadingIndicator() {
+        activityIndicator.isHidden = false // говорим, что индикатор загрузки не скрыт
+        activityIndicator.startAnimating() // включаем анимацию
+    }
+    
+    //метод скрытия индикатора загрузки
+    private func hideLoadingIndicator() {
+        activityIndicator.isHidden = true // скрываем индикатор
+        activityIndicator.stopAnimating() // отключаем анимацию
+    }
+    
+    
+    //метод вызова алерта с отображением типа ошибки
+    private func showNetworkError(message: String) {
         
-        imageView.layer.masksToBounds = true //разрешаем рисовать рамку
-        imageView.layer.cornerRadius = 20 // радиус скругления углов рамки
+        //скрываем индикатор загрузки
+        hideLoadingIndicator()
         
-        //инициализируем статистику
-        statisticService = StatisticServiceImplementation()
+        //передаем данные в модель для отображения в алерте
+        let model = AlertModel(title: "Ошибка",
+                               message: message,
+                               buttonText: "Попробовать еще раз",
+                               completion: { [weak self] in
+            guard let self = self else { return }
+            
+            self.currentQuestionIndex = 0
+            self.correctAnswers = 0
+            questionFactory?.loadData()
+        })
         
-        //инициализируем алерт
-        alertPresenter = AlertPresenter(viewController: self)
-        
-        // MARK: - QuestionFactoryDelegate
-        
-        //инициализируем делегат фабрики вопросов
-        questionFactory = QuestionFactory(delegate: self)
-        
-        func didReceiveNextQuestion(question: QuizQuestion?) {
-        }
-        //запрашиваем первый вопрос
+        alertPresenter?.showResult(in: model)
+    }
+    
+    func didLoadDataFromServer() {
+        hideLoadingIndicator()
         questionFactory?.requestNextQuestion()
     }
+
+    func didFailToLoadData(with error: Error) {
+        showNetworkError(message: error.localizedDescription) // возьмём в качестве сообщения описание ошибки
+    }
+    
+    /*
+    func showFirework() {
+        CATransaction.begin()
+        
+        let emitter = CAEmitterLayer()
+        emitter.emitterPosition = CGPoint(x: view.bounds.midX, y: view.bounds.maxY)
+        emitter.emitterSize = CGSize(width: 100, height: 100)
+        emitter.emitterShape = .circle
+        emitter.emitterMode = .outline
+        
+        let cell = CAEmitterCell()
+        cell.contents = UIImage(named: "spark.png")?.cgImage
+        cell.birthRate = 50
+        cell.lifetime = 1.5
+        cell.velocity = 200
+        cell.velocityRange = 50
+        cell.emissionLongitude = -.pi / 2
+        cell.emissionRange = .pi / 4
+        cell.scale = 0.1
+        cell.scaleRange = 0.05
+        cell.alphaSpeed = -0.1
+        cell.color = UIColor(red: 1, green: 0.5, blue: 0.1, alpha: 1).cgColor
+        
+        emitter.emitterCells = [cell]
+        view.layer.addSublayer(emitter)
+        
+        let animation = CABasicAnimation(keyPath: "emitterCells.cell.scale")
+        animation.fromValue = 0.1
+        animation.toValue = 1
+        animation.duration = 5.0
+        animation.timingFunction = CAMediaTimingFunction(name: .easeOut)
+        
+        let moveAnimation = CABasicAnimation(keyPath: "emitterPosition.y")
+        moveAnimation.fromValue = view.bounds.maxY
+        moveAnimation.toValue = view.bounds.midY
+        moveAnimation.duration = 0.5
+        moveAnimation.timingFunction = CAMediaTimingFunction(name: .easeOut)
+        emitter.add(moveAnimation, forKey: "move")
+         
+        CATransaction.setCompletionBlock({emitter.removeFromSuperlayer()})
+        
+        CATransaction.commit()
+    }
+
+ Здесь мы устанавливаем emitterMode в outline, чтобы частицы стреляли вверх, а emitterShape в circle, чтобы частицы распределялись равномерно вокруг центральной точки. Затем мы устанавливаем emitterSize в размер, который мы хотим, чтобы занимал наш эффект фейерверка на экране.
+
+ Затем мы создаем CAEmitterCell, который будет использоваться для создания частиц. Мы устанавливаем изображение, которое будет использоваться для отображения частиц, а также различные свойства, такие как скорость, время жизни, цвет и т.д.
+
+ Затем мы добавляем CAEmitterCell в CAEmitterLayer и добавляем CAEmitterLayer на экран. Мы также создаем анимацию, которая увеличивает размер частиц и анимацию, которая перемещает CAEmitterLayer вверх на экране.
+
+ */
+
+
+    
+    
 }
 
-
-/*
- 
- это старый код, оставлю на память
- 
- // берём текущий вопрос из массива вопросов по индексу текущего вопроса
- // и вызываем метод show() для первого вопроса
- let currentQuestion = questions[currentQuestionIndex]
- let firstQuestion = convert(model: currentQuestion)
- show(quiz: firstQuestion)
- 
- // приватный метод конвертации, который принимает моковый вопрос и возвращает вью модель для главного экрана
- private func convert(model: QuizQuestion) -> QuizStepViewModel {
-     let questionToView = QuizStepViewModel(
-         image: UIImage(named: model.image) ?? UIImage(),
-         question: model.text,
-         questionNumber: "\(currentQuestionIndex + 1)/\(questions.count)")
-     return questionToView
- }
- 
- 
- //проверяем, что фабрика вернула не nil и показываем первый вопрос
- if let firstQuestion = questionFactory.requestNextQuestion() {
-     currentQuestion = firstQuestion
-     let viewModel = convert(model: firstQuestion)
-     
-     show(quiz: viewModel)
- 
- 
- 
- // приватный метод для показа результатов раунда квиза
- // принимает вью модель QuizResultsViewModel и ничего не возвращает
- private func showResults(quiz result: QuizResultsViewModel) {
-     let alert = UIAlertController(
-                 title: result.title,
-                 message: result.text,
-                 preferredStyle: .alert)
-
-     let action = UIAlertAction(title: result.buttonText, style: .default) { [weak self] _ in //через слабую ссылку избавляемся от ретейн цикла
-         guard let self = self else { return } // анврапим слабую ссылку
-         
-         self.currentQuestionIndex = 0
-         self.correctAnswers = 0
-         
-         questionFactory?.requestNextQuestion()
-     }
-
-             alert.addAction(action)
-             self.present(alert, animated: true, completion: nil)
- }
- 
- // приватный метод для показа результатов раунда квиза
- // принимает вью модель QuizResultsViewModel и ничего не возвращает
- private func showResults(quiz result: AlertModel) {
-     let alert = UIAlertController(
-                 title: result.title,
-                 message: result.message,
-                 preferredStyle: .alert)
-
-     let action = UIAlertAction(title: result.buttonText, style: .default) { [weak self] _ in //через слабую ссылку избавляемся от ретейн цикла
-         guard let self = self else { return } // анврапим слабую ссылку
-         
-         self.currentQuestionIndex = 0
-         self.correctAnswers = 0
-         
-         questionFactory?.requestNextQuestion()
-     }
-
-             alert.addAction(action)
-             self.present(alert, animated: true, completion: nil)
- }
- 
- 
- 
- let text = correctAnswers == questionsAmount ?
-         "Поздравляем, Вы ответили на 10 из 10!" :
-         "Вы ответили на \(correctAnswers) из 10, попробуйте ещё раз!"
-         let viewModel = AlertModel (  /*QuizResultsViewModel*/
-                                     title: "Этот раунд окончен!",
-                                     message: text,
-                                     buttonText: "Сыграть ещё раз",
-                                     completion: { [weak self] in
-                                         guard let self else { return }
-                                         self.yesButtonClicked.isEnabled = true // включаем кнопки
-                                         self.noButtonClicked.isEnabled = true
-                                         self.imageView.layer.borderColor = UIColor.clear.cgColor
-                                         self.currentQuestionIndex = 0  //сбрасываем счетчики
-                                         self.correctAnswers = 0
-                                         questionFactory?.requestNextQuestion()//запрашиваем новый вопрос
-                                     })
- alertPresenter?.showResult(in: viewModel)
- 
- */
