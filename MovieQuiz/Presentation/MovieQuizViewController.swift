@@ -190,6 +190,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             showLoadingIndicator()
             currentQuestionIndex += 1
             questionFactory?.self.requestNextQuestion()
+            
         }
     }
     
@@ -272,8 +273,9 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         let moveAnimation = CABasicAnimation(keyPath: "emitterPosition.y")
         moveAnimation.fromValue = view.bounds.maxY
         moveAnimation.toValue = view.bounds.midY
-        moveAnimation.duration = 0.5
+        moveAnimation.duration = 5.0
         moveAnimation.timingFunction = CAMediaTimingFunction(name: .easeOut)
+     
         emitter.add(moveAnimation, forKey: "move")
          
         CATransaction.setCompletionBlock({emitter.removeFromSuperlayer()})

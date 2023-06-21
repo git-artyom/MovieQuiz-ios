@@ -3,8 +3,9 @@ import Foundation
 
 // сервис, для работы с сетью.
 /// Отвечает за загрузку данных по URL
-struct NetworkClient {
+struct NetworkClient: NetworkRoutingProtocol {
 
+    //реализация протокола error 
     private enum NetworkError: Error {
         case codeError
     }
