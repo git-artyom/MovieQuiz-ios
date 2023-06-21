@@ -6,7 +6,7 @@
 //
 
 import XCTest
-
+@testable import MovieQuiz
 
 final class MovieQuizUITests: XCTestCase {
     
@@ -39,7 +39,7 @@ final class MovieQuizUITests: XCTestCase {
     
     func testYesButton() {
         
-        sleep(3) // устанавливаем задержку выполнения
+        sleep(5) // устанавливаем задержку выполнения
         
         let firstPoster = app.images["Poster"] // находим первоначальный постер
         let firstPosterData = firstPoster.screenshot().pngRepresentation // Вычисляемое свойство pngRepresentation возвращает нам скриншот в виде данных (тип Data)
@@ -58,14 +58,14 @@ final class MovieQuizUITests: XCTestCase {
     
     func testNoButton() throws {
         
-        sleep(3)
+        sleep(5)
         
         let firstPoster = app.images["Poster"]
         let firstPosterData = firstPoster.screenshot().pngRepresentation
         
         app.buttons["No"].tap()
         
-        sleep(3)
+        sleep(1)
         
         let secondPoster = app.images["Poster"]
         let secondPosterData = secondPoster.screenshot().pngRepresentation
@@ -76,4 +76,40 @@ final class MovieQuizUITests: XCTestCase {
         
     }
     
+    func testGameFinish() {
+        
+        sleep(5)
+        
+        for _ in 1...10 { // 10 раз "нажимаем" на кнопку чтобы дойти до состояния показа алерта
+            app.buttons["No"].tap()
+            sleep(2)
+        }
+
+        let alert = app.alerts["Game results"] // айдентифаер алерта задается при его создании в AlertPresenter
+        
+        XCTAssertTrue(alert.exists) // проверяем, что алерт появился
+        XCTAssertTrue(alert.label == "Этот раунд окончен!") // проверяем текст алерта
+        XCTAssertTrue(alert.buttons.firstMatch.label == "Сыграть еще раз") // ищет первую кнопку на алерте, и метод нам подходит, так как кнопка всего одна.
+    }
+
+    // метод проверки отключения алерта по нажатию кнопки
+    func testAlertDismiss() {
+        
+        sleep(5)
+        
+        for _ in 1...10 {
+            app.buttons["No"].tap()
+            sleep(2)
+        }
+        
+        let alert = app.alerts["Game results"]
+        alert.buttons.firstMatch.tap()
+        
+        sleep(2)
+        
+        let indexLabel = app.staticTexts["Index"]
+        
+        XCTAssertFalse(alert.exists)
+        XCTAssertTrue(indexLabel.label == "1/10")
+    }
 }
