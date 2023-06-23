@@ -6,8 +6,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     /*
      
      Спасибо за ревью!
-
-     по приколу добавил метод создания фейерверка в конце квиза, метод showFirework() изображение для генерации хранится в ассетах)
+     
      
      */
     
@@ -40,7 +39,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
     
     
-    
     @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
     
     @IBOutlet private var QuestionLabel: UILabel!
@@ -51,17 +49,20 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     @IBOutlet weak var noButtonClicked: UIButton!
     @IBOutlet weak var yesButtonClicked: UIButton!
     
+    
+    private let presenter = MovieQuizPresenter()
+    
     //тут у нас иньекция зависимостей, инициализируем во viewDidLoad()
     private var alertPresenter: AlertPresenterProtoсol?
     
-    // переменная с индексом текущего вопроса, начальное значение 0
-    private var currentQuestionIndex = 0
+    //    // переменная с индексом текущего вопроса, начальное значение 0
+    //    private var currentQuestionIndex = 0
     
     // переменная со счётчиком правильных ответов, начальное значение 0
     private var correctAnswers = 0
     
-    //общее количество вопросов для квиза
-    private let questionsAmount: Int = 10
+    //    //общее количество вопросов для квиза
+    //    private let questionsAmount: Int = 10
     
     //фабрика вопросов к которой обращается контроллер
     private var questionFactory: QuestionFactoryProtocol?
@@ -79,7 +80,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         }
         hideLoadingIndicator()
         currentQuestion = question
-        let viewModel = convert(model: question)
+        let viewModel = presenter.convert(model: question)
         DispatchQueue.main.async { [weak self] in
             self?.show(quiz: viewModel)
         }
@@ -93,10 +94,10 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         guard let currentQuestion = currentQuestion else {
             return
         }
-            let answer = false
-            showAnswerResult(isCorrect: answer == currentQuestion.correctAnswer)
+        let answer = false
+        showAnswerResult(isCorrect: answer == currentQuestion.correctAnswer)
     }
-
+    
     
     //yes button private func
     @IBAction private func yesButtonClicked(_ sender: Any) {
@@ -104,8 +105,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         guard let currentQuestion = currentQuestion else {
             return
         }
-            let answer = true
-            showAnswerResult(isCorrect: answer == currentQuestion.correctAnswer)
+        let answer = true
+        showAnswerResult(isCorrect: answer == currentQuestion.correctAnswer)
     }
     
     // MARK: - Private functions
@@ -116,14 +117,14 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         
         //Проверяем, правильно ли ответил пользователь
         if isCorrect {
-                correctAnswers += 1
-            }
+            correctAnswers += 1
+        }
         //показываем рамку зависящего от ответа пользователя цвета
         imageView.layer.borderWidth = 8
         imageView.layer.borderColor = isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
         yesButtonClicked.isEnabled = false //отключаем обе кнопки чтобы не засчитывалось несколько ответов за раз
         noButtonClicked.isEnabled = false
-
+        
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in //через слабую ссылку избавляемся от ретейн цикла
             guard let self = self else { return } // анврапим слабую ссылку
             self.showNextQuestionOrResults()
@@ -132,14 +133,14 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         }
     }
     
-    // приватный метод конвертации, который принимает моковый вопрос и возвращает вью модель для главного экрана
-    private func convert(model: QuizQuestion) -> QuizStepViewModel {
-        let questionToView = QuizStepViewModel(
-            image: UIImage(data: model.image) ?? UIImage(),
-            question: model.text,
-            questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
-        return questionToView
-    }
+    //    // приватный метод конвертации, который принимает моковый вопрос и возвращает вью модель для главного экрана
+    //    private func convert(model: QuizQuestion) -> QuizStepViewModel {
+    //        let questionToView = QuizStepViewModel(
+    //            image: UIImage(data: model.image) ?? UIImage(),
+    //            question: model.text,
+    //            questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
+    //        return questionToView
+    //    }
     
     // приватный метод вывода на экран вопроса, который принимает на вход вью модель вопроса и ничего не возвращает
     private func show(quiz step: QuizStepViewModel) {
@@ -156,30 +157,30 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         imageView.layer.borderColor = UIColor.clear.cgColor
         
         // идём в состояние "Результат квиза"
-        if currentQuestionIndex == questionsAmount - 1 {
+        if presenter.isLastQuestion() {
             
             guard let statisticService = statisticService else {
                 print("Не удалось загрузить статистику!")
                 return
             }
             
-            statisticService.store(correct: correctAnswers, total: questionsAmount)
+            statisticService.store(correct: correctAnswers, total: presenter.questionsAmount)
             let bestGame = statisticService.bestGame
             let viewModel = AlertModel(title: "Этот раунд окончен!",
-                                   message: """
-                                Ваш результат: \(correctAnswers)/\(questionsAmount)
+                                       message: """
+                                Ваш результат: \(correctAnswers)/\(presenter.questionsAmount)
                                 Количество сыгранных квизов: \(statisticService.gamesCount)
                                 Рекорд: \(statisticService.bestGame.correct)/\(statisticService.bestGame.total) (\(bestGame.date.dateTimeString))
                                 Средняя точность: \(String(format: "%.2f", statisticService.totalAccuracy))%
                                 """,
-                                   buttonText: "Сыграть еще раз",
-                                   completion: { [weak self] in
+                                       buttonText: "Сыграть еще раз",
+                                       completion: { [weak self] in
                 guard let self = self else { return }
                 
                 self.yesButtonClicked.isEnabled = true // включаем кнопки
                 self.noButtonClicked.isEnabled = true
                 self.imageView.layer.borderColor = UIColor.clear.cgColor
-                self.currentQuestionIndex = 0  //сбрасываем счетчики
+                self.presenter.resetQuestionIndex() //сбрасываем счетчики
                 self.correctAnswers = 0
                 questionFactory?.requestNextQuestion() //запрашиваем новый вопрос
             })
@@ -188,9 +189,10 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             //или показываем следующий вопрос
         } else {
             showLoadingIndicator()
-            currentQuestionIndex += 1
-            questionFactory?.self.requestNextQuestion()
             
+            presenter.switchToNextQuestion()
+            questionFactory?.self.requestNextQuestion()
+
         }
     }
     
@@ -221,7 +223,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
                                completion: { [weak self] in
             guard let self = self else { return }
             
-            self.currentQuestionIndex = 0
+            self.presenter.resetQuestionIndex()
             self.correctAnswers = 0
             questionFactory?.loadData()
         })
@@ -233,65 +235,71 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         hideLoadingIndicator()
         questionFactory?.requestNextQuestion()
     }
-
+    
     func didFailToLoadData(with error: Error) {
         showNetworkError(message: error.localizedDescription) // возьмём в качестве сообщения описание ошибки
     }
     
+    
+    
+    
+    
     /*
-    func showFirework() {
-        CATransaction.begin()
-        
-        let emitter = CAEmitterLayer()
-        emitter.emitterPosition = CGPoint(x: view.bounds.midX, y: view.bounds.maxY)
-        emitter.emitterSize = CGSize(width: 100, height: 100)
-        emitter.emitterShape = .circle
-        emitter.emitterMode = .outline
-        
-        let cell = CAEmitterCell()
-        cell.contents = UIImage(named: "spark.png")?.cgImage
-        cell.birthRate = 50
-        cell.lifetime = 1.5
-        cell.velocity = 200
-        cell.velocityRange = 50
-        cell.emissionLongitude = -.pi / 2
-        cell.emissionRange = .pi / 4
-        cell.scale = 0.1
-        cell.scaleRange = 0.05
-        cell.alphaSpeed = -0.1
-        cell.color = UIColor(red: 1, green: 0.5, blue: 0.1, alpha: 1).cgColor
-        
-        emitter.emitterCells = [cell]
-        view.layer.addSublayer(emitter)
-        
-        let animation = CABasicAnimation(keyPath: "emitterCells.cell.scale")
-        animation.fromValue = 0.1
-        animation.toValue = 1
-        animation.duration = 5.0
-        animation.timingFunction = CAMediaTimingFunction(name: .easeOut)
-        
-        let moveAnimation = CABasicAnimation(keyPath: "emitterPosition.y")
-        moveAnimation.fromValue = view.bounds.maxY
-        moveAnimation.toValue = view.bounds.midY
-        moveAnimation.duration = 5.0
-        moveAnimation.timingFunction = CAMediaTimingFunction(name: .easeOut)
+     func showFirework() {
+     CATransaction.begin()
      
-        emitter.add(moveAnimation, forKey: "move")
-         
-        CATransaction.setCompletionBlock({emitter.removeFromSuperlayer()})
-        
-        CATransaction.commit()
-    }
-
- Здесь мы устанавливаем emitterMode в outline, чтобы частицы стреляли вверх, а emitterShape в circle, чтобы частицы распределялись равномерно вокруг центральной точки. Затем мы устанавливаем emitterSize в размер, который мы хотим, чтобы занимал наш эффект фейерверка на экране.
-
- Затем мы создаем CAEmitterCell, который будет использоваться для создания частиц. Мы устанавливаем изображение, которое будет использоваться для отображения частиц, а также различные свойства, такие как скорость, время жизни, цвет и т.д.
-
- Затем мы добавляем CAEmitterCell в CAEmitterLayer и добавляем CAEmitterLayer на экран. Мы также создаем анимацию, которая увеличивает размер частиц и анимацию, которая перемещает CAEmitterLayer вверх на экране.
-
- */
-
-
+     let emitter = CAEmitterLayer()
+     emitter.emitterPosition = CGPoint(x: view.bounds.midX, y: view.bounds.maxY)
+     emitter.emitterSize = CGSize(width: 100, height: 100)
+     emitter.emitterShape = .circle
+     emitter.emitterMode = .outline
+     
+     let cell = CAEmitterCell()
+     cell.contents = UIImage(named: "spark.png")?.cgImage
+     cell.birthRate = 50
+     cell.lifetime = 1.5
+     cell.velocity = 200
+     cell.velocityRange = 50
+     cell.emissionLongitude = -.pi / 2
+     cell.emissionRange = .pi / 4
+     cell.scale = 0.1
+     cell.scaleRange = 0.05
+     cell.alphaSpeed = -0.1
+     cell.color = UIColor(red: 1, green: 0.5, blue: 0.1, alpha: 1).cgColor
+     
+     emitter.emitterCells = [cell]
+     view.layer.addSublayer(emitter)
+     
+     let animation = CABasicAnimation(keyPath: "emitterCells.cell.scale")
+     animation.fromValue = 0.1
+     animation.toValue = 1
+     animation.duration = 5.0
+     animation.timingFunction = CAMediaTimingFunction(name: .easeOut)
+     
+     let moveAnimation = CABasicAnimation(keyPath: "emitterPosition.y")
+     moveAnimation.fromValue = view.bounds.maxY
+     moveAnimation.toValue = view.bounds.midY
+     moveAnimation.duration = 5.0
+     moveAnimation.timingFunction = CAMediaTimingFunction(name: .easeOut)
+     
+     emitter.add(moveAnimation, forKey: "move")
+     
+     CATransaction.setCompletionBlock({emitter.removeFromSuperlayer()})
+     
+     CATransaction.commit()
+     }
+     
+     метод показа фейерверка, который я допилю в свободное время
+     
+     Здесь мы устанавливаем emitterMode в outline, чтобы частицы стреляли вверх, а emitterShape в circle, чтобы частицы распределялись равномерно вокруг центральной точки. Затем мы устанавливаем emitterSize в размер, который мы хотим, чтобы занимал наш эффект фейерверка на экране.
+     
+     Затем мы создаем CAEmitterCell, который будет использоваться для создания частиц. Мы устанавливаем изображение, которое будет использоваться для отображения частиц, а также различные свойства, такие как скорость, время жизни, цвет и т.д.
+     
+     Затем мы добавляем CAEmitterCell в CAEmitterLayer и добавляем CAEmitterLayer на экран. Мы также создаем анимацию, которая увеличивает размер частиц и анимацию, которая перемещает CAEmitterLayer вверх на экране.
+     
+     */
+    
+    
     
     
 }
