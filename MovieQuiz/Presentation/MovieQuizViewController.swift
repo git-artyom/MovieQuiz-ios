@@ -15,6 +15,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        presenter.viewController = self
+        
         imageView.layer.masksToBounds = true //разрешаем рисовать рамку
         imageView.layer.cornerRadius = 20 // радиус скругления углов рамки
         
@@ -79,7 +81,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             return
         }
         hideLoadingIndicator()
-        currentQuestion = question
+        presenter.currentQuestion = question
         let viewModel = presenter.convert(model: question)
         DispatchQueue.main.async { [weak self] in
             self?.show(quiz: viewModel)
@@ -88,32 +90,39 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     // MARK: - Actions
     
-    //no button private func
-    @IBAction private func noButtonClicked(_ sender: Any) {
+    @IBAction private func noButtonClicked(_ sender: UIButton) {
         
-        guard let currentQuestion = currentQuestion else {
-            return
-        }
-        let answer = false
-        showAnswerResult(isCorrect: answer == currentQuestion.correctAnswer)
+        presenter.currentQuestion = currentQuestion
+        presenter.noButtonClicked()
+        
+//        guard let currentQuestion = currentQuestion else {
+//            return
+//        }
+//        let answer = false
+//        showAnswerResult(isCorrect: answer == currentQuestion.correctAnswer)
     }
     
     
-    //yes button private func
-    @IBAction private func yesButtonClicked(_ sender: Any) {
+    
+    @IBAction private func yesButtonClicked(_ sender: UIButton) {
         
-        guard let currentQuestion = currentQuestion else {
-            return
-        }
-        let answer = true
-        showAnswerResult(isCorrect: answer == currentQuestion.correctAnswer)
+        presenter.currentQuestion = currentQuestion
+        presenter.yesButtonClicked()
+        
+//        guard let currentQuestion = currentQuestion else {
+//            return
+//        }
+//        let answer = true
+//
+//
+//        showAnswerResult(isCorrect: answer == currentQuestion.correctAnswer)
     }
     
     // MARK: - Private functions
     
-    // приватный метод, который и меняет цвет рамки, и вызывает метод перехода
-    // принимает на вход булевое значение и ничего не возвращает
-    private func showAnswerResult(isCorrect: Bool) {
+        // приватный метод, который и меняет цвет рамки, и вызывает метод перехода
+        // принимает на вход булевое значение и ничего не возвращает
+        func showAnswerResult(isCorrect: Bool) {
         
         //Проверяем, правильно ли ответил пользователь
         if isCorrect {
