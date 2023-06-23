@@ -15,9 +15,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     
     init(viewController: MovieQuizViewController) {
             self.viewController = viewController
-            
             statisticService = StatisticServiceImplementation()
-            
             questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
             questionFactory?.loadData()
             viewController.showLoadingIndicator()
@@ -36,7 +34,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     }
     
     private func didAnswer(isYes: Bool) {
-            guard let currentQuestion = currentQuestion else {
+        guard let currentQuestion = currentQuestion else {
                 return
             }
             
@@ -84,9 +82,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         didAnswer(isYes: isCorrect)
         viewController?.highlightImageBorder(isCorrectAnswer: isCorrect)
         
-//        //показываем рамку зависящего от ответа пользователя цвета
-//        imageView.layer.borderWidth = 8
-//        imageView.layer.borderColor = isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
+
         viewController?.yesButtonClicked.isEnabled = false //отключаем обе кнопки чтобы не засчитывалось несколько ответов за раз
         viewController?.noButtonClicked.isEnabled = false
         
@@ -102,10 +98,8 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     // приватный метод, который содержит логику перехода в один из сценариев
     func showNextQuestionOrResults() {
         
-        // устанавливаем цвет рамки на clear
         viewController?.imageView.layer.borderColor = UIColor.clear.cgColor
         
-        // идём в состояние "Результат квиза"
         if self.isLastQuestion() {
             
             guard let statisticService = statisticService else {
