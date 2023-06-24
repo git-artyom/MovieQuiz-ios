@@ -137,7 +137,7 @@ class QuestionFactory: QuestionFactoryProtocol {
                     self.delegate?.didLoadDataFromServer() // сообщаем, что данные загрузились
                     
                 case .failure(let error):
-                    self.delegate?.didFailToLoadData(with: error) // сообщаем об ошибке нашему MovieQuizViewController
+                    self.delegate?.didFailToLoadData(with: error) // сообщаем об ошибке нашему делегату
                 }
             }
         }
