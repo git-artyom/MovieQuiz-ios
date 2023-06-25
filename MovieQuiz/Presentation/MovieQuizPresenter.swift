@@ -11,7 +11,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     private let questionsAmount: Int = 10
     private var currentQuestionIndex: Int = 0
     private var correctAnswers: Int = 0
-     var alertPresenter: AlertPresenterProtoсol?
+    var alertPresenter: AlertPresenterProtoсol?
     
     
     init(viewController: MovieQuizViewController) {
@@ -50,8 +50,6 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     func isLastQuestion() -> Bool {
         currentQuestionIndex == questionsAmount - 1
     }
-    
-    
     
     func restartGame() {
         currentQuestionIndex = 0
@@ -107,27 +105,35 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     }
     
     private func proceedToNextQuestionOrResults() {
-        
         if self.isLastQuestion() {
-                    let text = makeResultsMessage()
-
-                    let viewModel = QuizResultsViewModel(
-                        title: "Этот раунд окончен!",
-                        text: text,
-                        buttonText: "Сыграть ещё раз")
-                        viewController?.show(quiz: viewModel)
-                } else {
-                    self.switchToNextQuestion()
-                    questionFactory?.requestNextQuestion()
-                }
-        
-        
-
+            showResults()
+        } else {
+            self.switchToNextQuestion()
+            questionFactory?.requestNextQuestion()
+        }
     }
     
-    func makeResultsMessage() -> String {
+    private func showResults() {
+        guard let statisticService = statisticService else {
+            print("Не удалось получить статистику")
+            return
+        }
         statisticService.store(correct: correctAnswers, total: questionsAmount)
         
+        let alert = AlertModel(title: "Этот раунд окончен!",
+                               message: makeResultsMessage(),
+                               buttonText: "Сыграть еще раз",
+                               completion: { [weak self] in
+            guard let self = self else {
+                return
+            }
+            restartGame()
+        })
+        alertPresenter?.showResult(in: alert)
+    }
+    
+    
+    func makeResultsMessage() -> String {        
         let bestGame = statisticService.bestGame
         
         let totalPlaysCountLine = "Количество сыгранных квизов: \(statisticService.gamesCount)"
@@ -142,6 +148,24 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         
         return resultMessage
     }
+    
+    
 }
 
-
+//
+//func showResult(quiz result: QuizResultsViewModel) {
+////        let message = presenter.makeResultsMessage()
+//
+//    let alert = UIAlertController(
+//        title: result.title,
+//        message: result.text,
+//        preferredStyle: .alert)
+//
+//    let action = UIAlertAction(title: result.buttonText, style: .default) { [weak self] _ in
+//        guard let self = self else { return }
+//
+//        self.restartGame()
+//    }
+//
+//    alert.addAction(action)
+//}

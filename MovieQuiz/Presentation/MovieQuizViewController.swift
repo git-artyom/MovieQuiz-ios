@@ -3,6 +3,12 @@ import UIKit
 final class MovieQuizViewController: UIViewController {
     
     
+    /*
+     
+     Спасибо за ревью!
+     
+     */
+    
     @IBOutlet private var imageView: UIImageView!
     @IBOutlet private var textLabel: UILabel!
     @IBOutlet private var counterLabel: UILabel!
@@ -37,25 +43,6 @@ final class MovieQuizViewController: UIViewController {
         counterLabel.text = step.questionNumber
     }
     
-    func show(quiz result: QuizResultsViewModel) {
-        let message = presenter.makeResultsMessage()
-        
-        let alert = UIAlertController(
-            title: result.title,
-            message: message,
-            preferredStyle: .alert)
-        
-        let action = UIAlertAction(title: result.buttonText, style: .default) { [weak self] _ in
-            guard let self = self else { return }
-            
-            self.presenter.restartGame()
-        }
-        
-        alert.addAction(action)
-        
-        self.present(alert, animated: true, completion: nil)
-    }
-    
     func highlightImageBorder(isCorrectAnswer: Bool) {
         imageView.layer.masksToBounds = true
         imageView.layer.borderWidth = 8
@@ -84,21 +71,13 @@ final class MovieQuizViewController: UIViewController {
             self.presenter.questionFactory?.loadData()
         })
         
-        self.presenter.alertPresenter?.showResult(in: model)
+        presenter.alertPresenter?.showResult(in: model)
     }
     
-    
-   
     func enableButton(_ isEnabled: Bool) {
-      noButtonClicked.isEnabled = isEnabled
-      yesButtonClicked.isEnabled = isEnabled
+        noButtonClicked.isEnabled = isEnabled
+        yesButtonClicked.isEnabled = isEnabled
     }
     
-    /*
-     
-     Спасибо за ревью!
-     
-     
-     */
 }
 

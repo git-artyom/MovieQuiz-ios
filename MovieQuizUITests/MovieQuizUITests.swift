@@ -78,11 +78,11 @@ final class MovieQuizUITests: XCTestCase {
     
     func testGameFinish() {
         
-        sleep(5)
+        sleep(15)
         
         for _ in 1...10 { // 10 раз "нажимаем" на кнопку чтобы дойти до состояния показа алерта
             app.buttons["No"].tap()
-            sleep(2)
+            sleep(4)
         }
 
         let alert = app.alerts["Game results"] // айдентифаер алерта задается при его создании в AlertPresenter
@@ -95,7 +95,7 @@ final class MovieQuizUITests: XCTestCase {
     // метод проверки отключения алерта по нажатию кнопки
     func testAlertDismiss() {
         
-        sleep(5)
+        sleep(15)
         
         for _ in 1...10 {
             app.buttons["No"].tap()
