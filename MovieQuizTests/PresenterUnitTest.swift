@@ -20,6 +20,8 @@ final class MovieQuizViewControllerMock: MovieQuizViewControllerProtocol {
     func showNetworkError(message: String) {
     }
     
+    func enableButton(_ isEnabled: Bool) {
+    }
 }
 
 final class MovieQuizPresenterTests: XCTestCase {
