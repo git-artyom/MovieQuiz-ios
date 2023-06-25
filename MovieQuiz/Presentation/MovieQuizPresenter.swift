@@ -5,7 +5,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     
     private let statisticService: StatisticService!
     var questionFactory: QuestionFactoryProtocol?
-    private weak var viewController: MovieQuizViewController?
+    private weak var viewController: MovieQuizViewControllerProtocol?
     
     private var currentQuestion: QuizQuestion?
     private let questionsAmount: Int = 10
@@ -14,8 +14,8 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     var alertPresenter: AlertPresenterProtoсol?
     
     
-    init(viewController: MovieQuizViewControllerProtocol, alertPresenter: AlertPresenterProtoсol) {
-        self.viewController = viewController as? MovieQuizViewController
+    init(viewController: MovieQuizViewControllerProtocol) {
+        self.viewController = viewController
         alertPresenter = AlertPresenter(viewController: viewController as? UIViewController)
         statisticService = StatisticServiceImplementation()
         
