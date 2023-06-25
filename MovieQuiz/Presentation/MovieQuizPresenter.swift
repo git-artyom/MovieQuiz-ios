@@ -4,7 +4,7 @@ import UIKit
 final class MovieQuizPresenter: QuestionFactoryDelegate {
     
     private let statisticService: StatisticService!
-     var questionFactory: QuestionFactoryProtocol?
+    var questionFactory: QuestionFactoryProtocol?
     private weak var viewController: MovieQuizViewController?
     
     private var currentQuestion: QuizQuestion?
@@ -14,9 +14,9 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     var alertPresenter: AlertPresenterProtoсol?
     
     
-    init(viewController: MovieQuizViewController) {
-        self.viewController = viewController
-        alertPresenter = AlertPresenter(viewController: viewController)
+    init(viewController: MovieQuizViewControllerProtocol, alertPresenter: AlertPresenterProtoсol) {
+        self.viewController = viewController as? MovieQuizViewController
+        alertPresenter = AlertPresenter(viewController: viewController as? UIViewController)
         statisticService = StatisticServiceImplementation()
         
         questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
@@ -84,7 +84,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         guard let currentQuestion = currentQuestion else {
             return
         }
-       
+        
         let givenAnswer = isYes
         
         proceedWithAnswer(isCorrect: givenAnswer == currentQuestion.correctAnswer)
@@ -106,14 +106,14 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     
     private func proceedToNextQuestionOrResults() {
         if self.isLastQuestion() {
-            showResults()
+            showResult()
         } else {
             self.switchToNextQuestion()
             questionFactory?.requestNextQuestion()
         }
     }
     
-    private func showResults() {
+    private func showResult() {
         guard let statisticService = statisticService else {
             print("Не удалось получить статистику")
             return
@@ -121,7 +121,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         statisticService.store(correct: correctAnswers, total: questionsAmount)
         
         let alert = AlertModel(title: "Этот раунд окончен!",
-                               message: makeResultsMessage(),
+                               message: makeResultMessage(),
                                buttonText: "Сыграть еще раз",
                                completion: { [weak self] in
             guard let self = self else {
@@ -133,9 +133,9 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     }
     
     
-    func makeResultsMessage() -> String {        
-        let bestGame = statisticService.bestGame
+    func makeResultMessage() -> String {
         
+        let bestGame = statisticService.bestGame
         let totalPlaysCountLine = "Количество сыгранных квизов: \(statisticService.gamesCount)"
         let currentGameResultLine = "Ваш результат: \(correctAnswers)\\\(questionsAmount)"
         let bestGameInfoLine = "Рекорд: \(bestGame.correct)\\\(bestGame.total)"
