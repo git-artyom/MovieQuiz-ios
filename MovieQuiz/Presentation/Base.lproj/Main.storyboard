@@ -39,6 +39,7 @@
                                             </label>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="252" verticalHuggingPriority="251" text="/10" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qJm-0o-yRX" userLabel="Index Label">
                                                 <rect key="frame" x="345.5" y="0.0" width="28.5" height="23.5"/>
+                                                <accessibility key="accessibilityConfiguration" identifier="Index"/>
                                                 <fontDescription key="fontDescription" name="YSDisplay-Medium" family="YS Display" pointSize="20"/>
                                                 <color key="textColor" name="YP White"/>
                                                 <nil key="highlightedColor"/>
@@ -48,6 +49,7 @@
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="ZkU-Fm-WwS" userLabel="Preview Image">
                                         <rect key="frame" x="0.0" y="43.5" width="374" height="561"/>
                                         <color key="backgroundColor" name="YP White"/>
+                                        <accessibility key="accessibilityConfiguration" label="Poster"/>
                                         <constraints>
                                             <constraint firstAttribute="width" secondItem="ZkU-Fm-WwS" secondAttribute="height" multiplier="2:3" id="rvv-ao-Tkf"/>
                                         </constraints>
@@ -64,6 +66,7 @@
                                             <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="7IR-ly-K4K">
                                                 <rect key="frame" x="0.0" y="0.0" width="177" height="60"/>
                                                 <color key="backgroundColor" name="YP White"/>
+                                                <accessibility key="accessibilityConfiguration" identifier="No"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="60" id="9IL-fV-BQh"/>
                                                 </constraints>
@@ -78,12 +81,13 @@
                                                     </userDefinedRuntimeAttribute>
                                                 </userDefinedRuntimeAttributes>
                                                 <connections>
-                                                    <action selector="noButtonClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="euk-4R-TZ6"/>
+                                                    <action selector="noButtonClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Mbf-ES-Dp2"/>
                                                 </connections>
                                             </button>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jWV-oB-MoM">
                                                 <rect key="frame" x="197" y="0.0" width="177" height="60"/>
                                                 <color key="backgroundColor" name="YP White"/>
+                                                <accessibility key="accessibilityConfiguration" identifier="Yes"/>
                                                 <fontDescription key="fontDescription" name="YSDisplay-Medium" family="YS Display" pointSize="20"/>
                                                 <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
                                                 <state key="normal" title="Да">
@@ -95,7 +99,7 @@
                                                     </userDefinedRuntimeAttribute>
                                                 </userDefinedRuntimeAttributes>
                                                 <connections>
-                                                    <action selector="yesButtonClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="m7m-VD-cb1"/>
+                                                    <action selector="yesButtonClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="1Lq-Ng-VWy"/>
                                                 </connections>
                                             </button>
                                         </subviews>
@@ -122,10 +126,10 @@
                     <connections>
                         <outlet property="QuestionLabel" destination="nxm-9Q-WOf" id="UPd-QX-2Zw"/>
                         <outlet property="activityIndicator" destination="ARs-Xw-hkd" id="tvU-LG-CaO"/>
-                        <outlet property="counterLabel" destination="qJm-0o-yRX" id="5v6-3F-SWI"/>
-                        <outlet property="imageView" destination="ZkU-Fm-WwS" id="8yJ-dC-YeB"/>
+                        <outlet property="counterLabel" destination="qJm-0o-yRX" id="KmM-AB-Nwb"/>
+                        <outlet property="imageView" destination="ZkU-Fm-WwS" id="Dq5-Lr-t98"/>
                         <outlet property="noButtonClicked" destination="7IR-ly-K4K" id="QzA-z7-9Dz"/>
-                        <outlet property="textLabel" destination="g9N-Ko-J9V" id="rIF-7m-5Nm"/>
+                        <outlet property="textLabel" destination="g9N-Ko-J9V" id="ASd-y8-6uW"/>
                         <outlet property="yesButtonClicked" destination="jWV-oB-MoM" id="b4N-Cc-52x"/>
                     </connections>
                 </viewController>
